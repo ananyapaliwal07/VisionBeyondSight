@@ -1,0 +1,7 @@
+ultralytics
+opencv-python
+pyttsx3
+googlemaps
+SpeechRecognition
+pyaudio
+python-dotenv
