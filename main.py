@@ -1,11 +1,8 @@
 import threading
 from navigation import get_navigation_route
 from obstacle_detection import detect_obstacles
-from speech import stop_speech 
+from speech import stop_speech
 import speech_recognition as sr
-
-
-    
 
 def get_voice_destination():
     recognizer = sr.Recognizer()
@@ -24,20 +21,19 @@ def get_voice_destination():
             return None
 
 def main():
-    destination = None
-    while not destination:
-        destination = get_voice_destination()
+    destination_name = None
+    while not destination_name:
+        destination_name = get_voice_destination()
 
-    # start navigation in thread
-    nav_thread = threading.Thread(target=get_navigation_route, args=(destination,))
+    # Start navigation in a separate thread
+    nav_thread = threading.Thread(target=get_navigation_route, args=(destination_name,))
     nav_thread.start()
 
-    # start obstacle detection
+    # Start obstacle detection (runs in main thread)
     detect_obstacles()
 
-    # cleanup
+    # Cleanup speech engine if needed
     stop_speech()
-
 
 if __name__ == "__main__":
     main()

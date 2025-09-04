@@ -1,34 +1,55 @@
-import googlemaps
-from speech import speech_queue
-import time
-from datetime import datetime
-from dotenv import load_dotenv
+import requests
+from speech import speak  # your speech.py speak() function
 
-load_dotenv()
-gmaps = googlemaps.Client(key=os.getenv("GOOGLE_API_KEY"))
+# Start location: MSIT Janakpuri (Longitude, Latitude)
+START_COORDS = (77.1025, 28.7041)
 
+# OSRM endpoint for walking directions
+OSRM_URL = "http://router.project-osrm.org/route/v1/foot/{start_lon},{start_lat};{end_lon},{end_lat}?overview=false&steps=true"
 
-def get_navigation_route(destination, start_location="Maharaja Surajmal Institute of Technology, Delhi"):
-    """Fetch walking navigation route and speak it step by step"""
+# Temporary mapping of spoken destination names to coordinates
+DESTINATIONS = {
+    "karkardooma": (77.2931, 28.6773),
+    "connaught place": (77.2167, 28.6329),
+    "ashok vihar": (77.1350, 28.7000)
+}
+
+def get_navigation_route(destination_name):
+    """
+    Takes a spoken destination name (text), converts it to coordinates,
+    fetches step-by-step walking instructions from OSRM, and speaks them.
+    """
+    # Convert name to coordinates
+    destination_coords = DESTINATIONS.get(destination_name.lower())
+    if not destination_coords:
+        speak("Destination not recognized. Please try again.")
+        return
+
+    # Prepare OSRM API URL
+    url = OSRM_URL.format(
+        start_lon=START_COORDS[0],
+        start_lat=START_COORDS[1],
+        end_lon=destination_coords[0],
+        end_lat=destination_coords[1]
+    )
+
     try:
-        directions = gmaps.directions(start_location, destination, mode="walking", departure_time=datetime.now())
-
-        if not directions:
-            speech_queue.put("No route found.")
-            return
-
-        steps = directions[0]['legs'][0]['steps']
-        for step in steps:
-            # clean HTML instructions
-            instruction = step['html_instructions']
-            clean_instruction = (
-                instruction.replace("<b>", "")
-                .replace("</b>", "")
-                .replace('<div style="font-size:0.9em">', " ")
-                .replace("</div>", "")
-            )
-            print(clean_instruction)
-            speech_queue.put(clean_instruction)  # ye bolne ke liye speech thread me jayega
-            time.sleep(10)  # har step ke beech thoda gap
+        response = requests.get(url)
+        data = response.json()
     except Exception as e:
-        speech_queue.put(f"Navigation error: {e}")
+        print("Error fetching route:", e)
+        speak("Could not fetch route. Please try again.")
+        return
+
+    # Check if route exists
+    if 'routes' not in data or len(data['routes']) == 0:
+        speak("No route found.")
+        return
+
+    # Speak each step
+    steps = data['routes'][0]['legs'][0]['steps']
+    for step in steps:
+        instruction = step.get('maneuver', {}).get('instruction', step.get('name', 'Continue'))
+
+        print(instruction)
+        speak(instruction)
