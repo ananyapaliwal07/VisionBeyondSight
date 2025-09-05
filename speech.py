@@ -17,7 +17,6 @@ def speech_worker():
 
     engine.stop()
 
-# background thread start
 speech_thread = threading.Thread(target=speech_worker, daemon=True)
 speech_thread.start()
 

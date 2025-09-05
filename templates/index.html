@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vision Beyond Sight</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+    <h1>Vision Beyond Sight</h1>
+    <button id="startBtn">Start Navigation</button>
+
+    <div id="container">
+        <div>
+            <h3>Camera Feed</h3>
+            <video id="camera" width="400" autoplay></video>
+        </div>
+        <div>
+            <h3>Map</h3>
+            <div id="map" style="width: 400px; height: 300px;"></div>
+        </div>
+    </div>
+
+    <div id="info">
+        <h3>Obstacles & Navigation</h3>
+        <div id="messages"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
