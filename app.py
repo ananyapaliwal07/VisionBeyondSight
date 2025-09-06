@@ -9,10 +9,14 @@ from obstacle_detection import detect_objects_from_frame  # your YOLO detection 
 from navigation import get_navigation_route
 from speech import stop_speech
 from messages import add_message, messages
+import os
+
+
+
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
-# ========== Routes ==========
+# ===== Routes =====
 
 @app.route("/start_navigation", methods=["POST"])
 def start_navigation():
@@ -21,8 +25,8 @@ def start_navigation():
     def nav_task():
         nav_thread = threading.Thread(target=get_navigation_route, args=(destination_name,))
         nav_thread.start()
-        nav_thread.join()  # wait for route instructions to finish
-        stop_speech()  # stop TTS after navigation ends
+        nav_thread.join()
+        stop_speech()
 
     threading.Thread(target=nav_task).start()
     return jsonify({"status": "Navigation started"})
@@ -58,6 +62,7 @@ def detect():
 def home():
     return render_template("index.html")
 
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
 
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host="0.0.0.0", port=port)
